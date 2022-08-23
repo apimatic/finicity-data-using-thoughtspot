@@ -11,37 +11,11 @@ export const router = express.Router();
 
 router.use(cors())
 
-const client = new Client({
-  finicityAppKey: process.env.FINICITY_APP_KEY,
-  timeout: 100000,
-  finicityAppToken: process.env.FINICITY_APP_TOKEN,
-});
-const authenticationController = new AuthenticationController(client);
 
 router.get('/finicitydata', finicityController);
 
 async function finicityController(req: Request, resp: Response) {
-  const customerData = { 
-    customerId: BigInt(6001391193),
-    fromDate: BigInt(1588365858),
-    toDate: BigInt(1653110643),
-    start: BigInt(1),
-    limit: BigInt(1000),
-    sort: 'desc',
-    includePending: false
-  }
-  
-  const tokenizedClient = await createTokenizedClient(client);
-  const transactionsController = await createTransactionController(tokenizedClient);
-  const { result } = await transactionsController.getCustomerTransactionsAll(
-    'application/json',
-    customerData.customerId,
-    customerData.fromDate,
-    customerData.toDate,
-    customerData.start,
-    customerData.limit,
-    customerData.sort,
-    customerData.includePending);
+
 
     const autoQuery = insertquery(result);
 
@@ -106,18 +80,11 @@ async function finicityController(req: Request, resp: Response) {
 }
 
 async function getAccessToken() {
-  const body: PartnerCredentials = {
-    partnerId: process.env.FINICITY_PARTNER_ID ?? '',
-    partnerSecret: process.env.FINICITY_PARTNER_SECRET ?? '',
-  };
-  const { result } = await authenticationController.partnerAuthentication('application/json', 'application/json', body);
-  return result.token;
+
 }
 
 async function createTokenizedClient(client: Client) {
-  return client.withConfiguration({ finicityAppToken: await getAccessToken() });
 }
 
 async function createTransactionController(client: Client) {
-  return new TransactionsController(client);
 }
